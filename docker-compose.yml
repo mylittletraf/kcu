@@ -18,6 +18,7 @@ services:
     build:
       context: ./kcu
     command: poetry run python main.py
+    restart: unless-stopped
     env_file:
       - .env
     environment:
