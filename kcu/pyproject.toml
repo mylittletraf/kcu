@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "kinotam-content-updater"
+version = "0.1.0"
+description = ""
+authors = ["mylittletraf <kanviser@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+requests = "^2.32.3"
+selenium = "^4.31.0"
+webdriver-manager = "^4.0.2"
+undetected-chromedriver = "^3.5.5"
+python-decouple = "^3.8"
+httpx = "^0.28.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

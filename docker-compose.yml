@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  torapi:
+    image: lifailon/torapi:latest
+    container_name: TorAPI
+    environment:
+      - PORT=${PORT}
+      - PROXY_ADDRESS=${PROXY_ADDRESS}
+      - PROXY_PORT=${PROXY_PORT}
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - torapi:/rotapi
+    restart: unless-stopped
+  kcu:
+    build:
+      context: ./kcu
+    command: poetry run python main.py
+    env_file:
+      - .env
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - ./result:/app/db
+      - ./logs:/app/logs
+      - ./config.json:/app/config.json
+    depends_on:
+      - torapi
+volumes:
+  torapi:
