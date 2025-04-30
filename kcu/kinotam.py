@@ -169,6 +169,7 @@ class Kinotam:
             f"*Дата загрузки:* {datetime.now().strftime("%d.%m.%Y %H:%M")}\n"
             f"*ID:* `{film.get('id')}`\n"
             f"*Название:* `{film.get('name_to_api')}`\n"
+            f"*Название раздачи:* `{film.get('name_release')}`\n"
             f"\n"
             f"[🔗 Фильм на Kinotam]({self.url}/movie/?Oi={film.get('id')})\n"
             f"[🔗 Ссылка на раздачу]({film.get('url')})\n"
