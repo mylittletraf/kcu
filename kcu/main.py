@@ -109,7 +109,7 @@ async def search_by_name(settings, client, query, target="all"):
 
 
 
-async def get_magnet_link(settings: Settings, client: httpx.AsyncClient, tracker: str, torrent_id: str, retries: int = 3, delay: float = 1.0) -> Optional[str]:
+async def get_magnet_link(settings: settings, client: httpx.AsyncClient, tracker: str, torrent_id: str, retries: int = 3, delay: float = 1.0) -> Optional[str]:
     url = f"{settings.url_torrent}/api/search/id/{tracker.lower()}"
     params = {"query": torrent_id}
 
