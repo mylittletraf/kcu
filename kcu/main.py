@@ -251,10 +251,11 @@ async def process_film(settings, client, film, uploaded_ids, update_mode=False):
     name_local = film.get('name')
     name_orig = film.get('name_orig')
     year = film.get('year')
+    views = film.get("views_cnt", 0)
 
-    if film.get("views_cnt") < settings.min_views:
+    if update_mode == False and views < settings.min_views:
         logger.info(
-            f"Фильм {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')}) имеет меньше {settings.min_views} просмотров, пропускаем")
+            f"Фильм {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')}) имеет меньше {settings.min_views} просмотров ({film.get('views_cnt')}), пропускаем")
         return None
 
     if not update_mode and kinotam_id in uploaded_ids:
