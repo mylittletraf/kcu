@@ -27,6 +27,7 @@ class Settings:
         self.get_film_delay = int(config("GET_FILMS_DELAY"))
         self.table_bad_quality = config("TABLE_NAME_BAD_QUALITY")
         self.table_good_quality = config("TABLE_NAME_GOOD_QUALITY")
+        self.min_views = int(config("MIN_VIEWS"))
 
 
     def _load_config(self):

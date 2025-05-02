@@ -11,6 +11,8 @@ services:
       - PASSWORD=${PASSWORD}
     volumes:
       - torapi:/rotapi
+#    ports:
+#      - "${PORT}:${PORT}"
     restart: unless-stopped
   kcu:
     build:

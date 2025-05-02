@@ -252,6 +252,11 @@ async def process_film(settings, client, film, uploaded_ids, update_mode=False):
     name_orig = film.get('name_orig')
     year = film.get('year')
 
+    if film.get("views_cnt") < settings.min_views:
+        logger.info(
+            f"Фильм {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')}) имеет меньше {settings.min_views} просмотров, пропускаем")
+        return None
+
     if not update_mode and kinotam_id in uploaded_ids:
         logger.info(f"Фильм {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')}) уже залит, пропускаем")
         return None
@@ -334,7 +339,7 @@ async def main():
                 logger.info(f"Загружаю фильм [{film_to_upload.get('id')}] | {film_to_upload.get('name_to_api')}")
                 kinotam_api.upload_film(film_to_upload)
                 logger.info(f"Ждем {settings.time_sleep / 60} минут до следующей отправки")
-                time.sleep(settings.time_sleep)
+                await asyncio.sleep(settings.time_sleep)
         else:
             with open(f"./db/result_{settings.app_name}.json", "w", encoding="utf-8") as f:
                 logger.info(f"Сохраняю результат в json (DEBUG={settings.debug})")

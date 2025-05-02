@@ -9,16 +9,21 @@
     "BDRip (1080p)",
     "HDTVRip 1080p",
     "WEBRip [H.264/1080p]",
-    "WEBRip [H.264/720p]"
+    "WEB-DL [H.264/1080p]",
+    "HDTV 1080p"
   ],
   "BAD_QUALITY": [
     "WEB-DLRip (720p)",
+    "WEB-DL [H.264/720p]",
+    "WEBRip [H.264/720p]",
     "WEB-DL 720p",
     "WEB-DL (720p)",
     "BDRip 720p",
     "BDRip (720p)",
     "HDTVRip 720p",
     "HDTVRip (720p)",
+    "HDTV 720",
+    "HDTV (720p)",
     "DVDRemux",
     "DTheaterRip",
     "BDRip-AVC",
