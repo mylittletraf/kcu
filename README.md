@@ -98,7 +98,7 @@ docker-compose down -v --remove-orphans
 }
 ```
 
-## .env (описание полей продублированны в .env-example)
+## .env + .env.mult (описание полей продублированы в .env-example)
 
 ```
 # Этот блок не трогаем!

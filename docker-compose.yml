@@ -9,8 +9,6 @@ services:
       - PROXY_PORT=${PROXY_PORT}
       - USERNAME=${USERNAME}
       - PASSWORD=${PASSWORD}
-    ports:
-      - "${PORT}:${PORT}"
     volumes:
       - torapi:/rotapi
     restart: unless-stopped
@@ -29,5 +27,21 @@ services:
       - ./config.json:/app/config.json
     depends_on:
       - torapi
+  kcu-mult:
+    build:
+      context: ./kcu
+    command: poetry run python main.py
+    restart: unless-stopped
+    env_file:
+      - .env.mult
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - ./result:/app/db
+      - ./logs:/app/logs
+      - ./config-mult.json:/app/config.json
+    depends_on:
+      - torapi
+      - kcu
 volumes:
   torapi:

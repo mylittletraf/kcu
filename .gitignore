@@ -1,4 +1,6 @@
 .env
+.env.mult
 .idea
 *.db
 *.log
+*.log*

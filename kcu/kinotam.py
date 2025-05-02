@@ -130,7 +130,7 @@ class Kinotam:
     def upload_film(self, film):
 
         data = {
-            "Ot": 91,
+            "Ot": self.cat_id,
             "Oi": film.get("id"),
             "title": film.get("name_to_api"),
             "torrent": film.get('magnet'),
@@ -140,19 +140,24 @@ class Kinotam:
         session = requests.Session()
         session.cookies.update(self.cookies)
         logger.info(f"Добавляю фильм на сайт {film}")
+        target_name = (
+            "Фильм" if self.cat_id == 91
+            else "Мультфильм" if self.cat_id == 104
+            else ""
+        )
 
         try:
             response = session.post(api_url, data=data)
             json_response = response.json()
             if json_response.get("code") == "00000":
-                logger.info(f"Добавил фильм. {json_response}, ")
+                logger.info(f"Добавил {target_name}. {json_response}, ")
                 self.send_message_tg(film, "✅ *Залил фильм:*")
             elif json_response.get("code") == "00037":
                 logger.warning(f"Загружен дубль. {json_response}, ")
                 self.send_message_tg(film, "⚠️ *Попытка повторной загрузки:*")
             else:
-                logger.warning(f"Ошибка при загрузке фильма. {json_response}, ")
-                self.send_message_tg(film, f"⛔️ *Ошибка при загрузке фильма ({json_response.get("code")}):*")
+                logger.warning(f"Ошибка при загрузке {target_name.lower()}a. {json_response}, ")
+                self.send_message_tg(film, f"⛔️ *Ошибка при загрузке {target_name.lower()}a ({json_response.get("code")}):*")
 
             return response
 

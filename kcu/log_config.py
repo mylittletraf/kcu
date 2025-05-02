@@ -1,6 +1,7 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
+from settings import settings
 
 os.makedirs("./logs", exist_ok=True)
 
@@ -28,4 +29,4 @@ if root_logger.hasHandlers():
 root_logger.addHandler(file_handler)
 root_logger.addHandler(console_handler)
 
-logger = logging.getLogger("kcu_app")
+logger = logging.getLogger(f"{settings.app_name}")

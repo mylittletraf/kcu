@@ -13,41 +13,11 @@ from decouple import AutoConfig
 from kinotam import Kinotam
 
 from log_config import logger
+from settings import settings
 
 
 BASE_DIR = Path(__file__).resolve().parent
 config = AutoConfig(search_path=BASE_DIR)
-
-
-class Settings:
-    def __init__(self):
-        self.url_admin = config("URL_ADMIN")
-        self.url = config("URL")
-        self.tm = config("TM")
-        self.auth_method = config("AUTH_METHOD")
-        self.url_torrent = config("URL_TORRAPI")
-        self.cat_id = int(config("CAT_ID"))
-        self.offset = int(config("OFFSET"))
-        self.limit = int(config("LIMIT"))
-        self.config_data = self._load_config()
-        self.tg_chat_id = config("TG_CHAT_ID")
-        self.tg_user_id = config("TG_USER_ID")
-        self.tg_token = config("TG_BOT_TOKEN")
-        self.db_name = config("DB_NAME")
-        self.debug = config("DEBUG", default=True, cast=bool)
-        self.time_sleep = int(config("ADD_TIME_SLEEP"))
-        self.restart_time = int(config("RESTART_TIME"))
-        self.get_film_retries = (int(config("GET_FILMS_RETRIES")))
-        self.get_film_delay = int(config("GET_FILMS_DELAY"))
-
-    def _load_config(self):
-        with open("config.json", encoding='utf-8') as f:
-            return json.load(f)
-
-    def get(self, key, default=None):
-        return self.config_data.get(key, default)
-
-settings = Settings()
 
 class Database:
 
@@ -64,16 +34,16 @@ class Database:
     def init(cls):
         with cls.connect() as conn:
             cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS films_bad_quality (
+            cursor.execute(f'''
+                CREATE TABLE IF NOT EXISTS {settings.table_bad_quality} (
                     id INTEGER PRIMARY KEY,
                     name TEXT NOT NULL,
                     name_orig TEXT,
                     year INTEGER
                 )
             ''')
-            cursor.execute('''
-               CREATE TABLE IF NOT EXISTS films_uploaded (
+            cursor.execute(f'''
+               CREATE TABLE IF NOT EXISTS {settings.table_good_quality} (
                    id        INTEGER PRIMARY KEY,
                    name      TEXT NOT NULL,
                    name_orig TEXT,
@@ -340,8 +310,6 @@ async def main():
         )
 
         films = kinotam_api.get_films_to_process(settings.get_film_retries, settings.get_film_delay)
-        # films = [{'id': 80968, 'name': 'Мастер', 'name_orig': 'A Working Man', 'year': 2025}, {'id': 81071, 'name': 'Батя 2. Дед', 'name_orig': None, 'year': 2025}, {'id': 80914, 'name': 'Последний охотник на демонов', 'name_orig': 'Home sweet home Rebirth', 'year': 2024}, {'id': 81126, 'name': 'Кракен', 'name_orig': '', 'year': 2025}, {'id': 81060, 'name': 'Под огнём', 'name_orig': 'Warfare', 'year': 2025}, {'id': 81002, 'name': 'Minecraft в кино', 'name_orig': 'A Minecraft Movie', 'year': 2025}, {'id': 81031, 'name': 'Новичок', 'name_orig': 'The Amateur', 'year': 2025}, {'id': 80973, 'name': 'Список заветных желаний', 'name_orig': 'The Life List', 'year': 0}, {'id': 80935, 'name': 'Западня', 'name_orig': 'Locked', 'year': 2025}, {'id': 80707, 'name': 'Красный шелк', 'name_orig': None, 'year': 2025}, {'id': 80932, 'name': 'Мудрые парни', 'name_orig': 'The Alto Knights', 'year': 2025}, {'id': 81080, 'name': 'Патруль. Последний приказ', 'name_orig': None, 'year': 2025}, {'id': 80829, 'name': 'Наша Russia. 8 марта', 'name_orig': None, 'year': 2025}, {'id': 80909, 'name': 'Белоснежка', 'name_orig': 'Snow White', 'year': 2025}, {'id': 81075, 'name': 'Жига. На полной скорости', 'name_orig': None, 'year': 2025}, {'id': 81111, 'name': 'Стрелки', 'name_orig': 'Gunslingers', 'year': 2025}, {'id': 81101, 'name': 'Где наши деньги?', 'name_orig': None, 'year': 2024}, {'id': 81000, 'name': 'Сикандар', 'name_orig': 'Sikandar', 'year': 2025}, {'id': 81107, 'name': 'Грешники', 'name_orig': 'Sinners', 'year': 2025}, {'id': 80611, 'name': 'Капитан Америка: Новый мир', 'name_orig': 'Captain America: Brave New World', 'year': 2025}, {'id': 80749, 'name': 'Злой город', 'name_orig': None, 'year': 2024}, {'id': 81033, 'name': 'В потерянных землях', 'name_orig': 'In the Lost Lands', 'year': 2025}, {'id': 80833, 'name': 'Северный полюс', 'name_orig': None, 'year': 2024}, {'id': 81073, 'name': 'Микки Монстр', 'name_orig': 'Screamboat', 'year': 2025}, {'id': 80918, 'name': 'Дубликат', 'name_orig': 'Duplicity', 'year': 2025}, {'id': 80879, 'name': 'Сорвать банк 2: Игра по-крупному', 'name_orig': 'Cash Out 2: High Rollers', 'year': 0}, {'id': 81029, 'name': 'Форест Роуд, 825', 'name_orig': '825 Forest Road', 'year': 2025}, {'id': 80997, 'name': 'Маленькая Сибирь', 'name_orig': 'Pikku-Siperia', 'year': 2025}, {'id': 81087, 'name': 'Большая двадцатка', 'name_orig': 'G20', 'year': 2025}, {'id': 80625, 'name': 'Ущелье', 'name_orig': 'The Gorge', 'year': 2025}, {'id': 81003, 'name': 'Все ради хита', 'name_orig': 'Banger', 'year': 2025}, {'id': 80834, 'name': 'Электрический штат', 'name_orig': 'The Electric State', 'year': 2025}, {'id': 80860, 'name': 'Новокаин', 'name_orig': 'Novocaine', 'year': 2025}, {'id': 80938, 'name': 'Откровение', 'name_orig': 'Gyesirok', 'year': 0}, {'id': 81078, 'name': 'Последний экзорцист', 'name_orig': 'Shadow of God', 'year': 2025}, {'id': 80823, 'name': 'Микки 17', 'name_orig': 'Mickey 17', 'year': 2025}, {'id': 80927, 'name': 'Буйная зрелость', 'name_orig': 'Raging Midlife', 'year': 2025}, {'id': 80888, 'name': 'Демон контроля', 'name_orig': 'Control Freak', 'year': 2025}, {'id': 80874, 'name': 'Чёрный чемодан – двойная игра', 'name_orig': 'Black Bag', 'year': 2025}, {'id': 80624, 'name': 'Рэкетир. Новые времена', 'name_orig': 'Рэкетир III', 'year': 2024}, {'id': 80908, 'name': 'Таинственный остров: Победителю достанется всё', 'name_orig': 'Mystery Island: Winner Takes All', 'year': 2025}, {'id': 80237, 'name': 'Финист. Первый богатырь', 'name_orig': None, 'year': 2024}, {'id': 80601, 'name': 'Путь рыцаря', 'name_orig': "A Knight's War", 'year': 0}, {'id': 80661, 'name': 'Сталкер. Тень Чернобыля', 'name_orig': 'S.T.A.L.K.E.R.: Shadow of the Zone', 'year': 2024}, {'id': 80721, 'name': 'Пророк. История Александра Пушкина', 'name_orig': None, 'year': 2025}, {'id': 80760, 'name': 'Город демонов', 'name_orig': 'Oni Goroshi', 'year': 2025}, {'id': 80917, 'name': 'Волшебный единорог', 'name_orig': 'Tale of the Forest Unicorn', 'year': 0}, {'id': 80718, 'name': 'Клинер', 'name_orig': 'Cleaner', 'year': 2025}, {'id': 80945, 'name': "О'Десса", 'name_orig': "O'Dessa", 'year': 2025}, {'id': 80832, 'name': 'Контратака', 'name_orig': 'Contraataque', 'year': 2025}, {'id': 80877, 'name': 'Ночь с психопатом', 'name_orig': 'Borderline', 'year': 2025}, {'id': 80773, 'name': 'Дыхание шторма', 'name_orig': 'Last Breath', 'year': 2025}, {'id': 81045, 'name': 'Прямая трансляция', 'name_orig': 'Livestream', 'year': 2025}, {'id': 81074, 'name': 'Наступит лето', 'name_orig': 'Summer Will Come', 'year': 2024}, {'id': 80999, 'name': 'Разрази меня гром', 'name_orig': 'Shiver Me Timbers', 'year': 2025}, {'id': 80431, 'name': 'Оплата кровью', 'name_orig': 'Blood Pay', 'year': 2025}, {'id': 80966, 'name': 'Пункт назначения: Комната 666', 'name_orig': 'Panggonan Wingit 2: Miss K', 'year': 2024}, {'id': 80507, 'name': 'Василий', 'name_orig': None, 'year': 2024}, {'id': 80650, 'name': 'Война и музыка', 'name_orig': None, 'year': 2024}, {'id': 80970, 'name': 'Холланд', 'name_orig': 'Holland', 'year': 2025}, {'id': 80696, 'name': 'По любви', 'name_orig': None, 'year': 2024}, {'id': 80422, 'name': 'Снайпер: Последняя битва', 'name_orig': 'Sniper: The Last Stand', 'year': 2025}, {'id': 79961, 'name': 'Другой мир: Год волка', 'name_orig': 'Werewolves', 'year': 2024}, {'id': 80996, 'name': 'Аппалачский пёс', 'name_orig': 'Appalachian Dog', 'year': 2025}]
-
         films_uploaded = Database.get_all_films("films_uploaded")
         films_to_update = Database.get_all_films("films_bad_quality")
 
@@ -368,7 +336,7 @@ async def main():
                 logger.info(f"Ждем {settings.time_sleep / 60} минут до следующей отправки")
                 time.sleep(settings.time_sleep)
         else:
-            with open("./db/result.json", "w", encoding="utf-8") as f:
+            with open(f"./db/result_{settings.app_name}.json", "w", encoding="utf-8") as f:
                 logger.info(f"Сохраняю результат в json (DEBUG={settings.debug})")
                 json.dump(final_result, f, ensure_ascii=False, indent=2)
         logger.info(f"Закончил работу, следующий запуск через {settings.restart_time / 60} минут")
