@@ -146,18 +146,24 @@ class Kinotam:
             else ""
         )
 
+        link_path = (
+            "movie" if self.cat_id == 91
+            else "cartoon" if self.cat_id == 104
+            else ""
+        )
+
         try:
             response = session.post(api_url, data=data)
             json_response = response.json()
             if json_response.get("code") == "00000":
                 logger.info(f"Добавил {target_name}. {json_response}, ")
-                self.send_message_tg(film, "✅ *Залил фильм:*")
+                self.send_message_tg(film, f"✅ *Залил {target_name}:*", link_path)
             elif json_response.get("code") == "00037":
                 logger.warning(f"Загружен дубль. {json_response}, ")
-                self.send_message_tg(film, "⚠️ *Попытка повторной загрузки:*")
+                self.send_message_tg(film, "⚠️ *Попытка повторной загрузки:*", link_path)
             else:
                 logger.warning(f"Ошибка при загрузке {target_name.lower()}a. {json_response}, ")
-                self.send_message_tg(film, f"⛔️ *Ошибка при загрузке {target_name.lower()}a ({json_response.get("code")}):*")
+                self.send_message_tg(film, f"⛔️ *Ошибка при загрузке {target_name.lower()}a ({json_response.get("code")}):*", link_path)
 
             return response
 
@@ -165,7 +171,7 @@ class Kinotam:
             logger.warning(f"Ошибка при добавлении фильма")
             return 'Ошибка ', e
 
-    def send_message_tg(self, film, message_status):
+    def send_message_tg(self, film, message_status, link_path):
         url = f'https://api.telegram.org/bot{self.tg_token}/sendMessage'
 
         message = (
@@ -176,7 +182,7 @@ class Kinotam:
             f"*Название:* `{film.get('name_to_api')}`\n"
             f"*Название раздачи:* `{film.get('name_release')}`\n"
             f"\n"
-            f"[🔗 Фильм на Kinotam]({self.url}/movie/?Oi={film.get('id')})\n"
+            f"[🔗 Фильм на Kinotam]({self.url}/{link_path}/?Oi={film.get('id')})\n"
             f"[🔗 Ссылка на раздачу]({film.get('url')})\n"
         )
 
