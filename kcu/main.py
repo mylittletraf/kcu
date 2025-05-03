@@ -217,9 +217,9 @@ def filter_best_quality(settings, items, film, update=False):
     if update:
         if good_items:
             logger.info(f"Найдено более хорошее качество для фильма: {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')})")
-            Database.delete_film_by_id(film.get('id'), "films_bad_quality")
+            Database.delete_film_by_id(film.get('id'), settings.table_bad_quality)
             logger.info(f"Удаление из 'films_bad_quality': {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')})")
-            Database.save_film(film, "films_uploaded")
+            Database.save_film(film, settings.table_good_quality)
             logger.info(f"Новая версия фильма на загрузку: {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')})")
             min_priority = min(item["Priority"] for item in good_items)
             return [item for item in good_items if item["Priority"] == min_priority]
@@ -227,7 +227,7 @@ def filter_best_quality(settings, items, film, update=False):
             return []
 
     if good_items:
-        Database.save_film(film, "films_uploaded")
+        Database.save_film(film, settings.table_good_quality)
         logger.info(f"Фильм на загрузку: {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')})")
         min_priority = min(item["Priority"] for item in good_items)
         return [item for item in good_items if item["Priority"] == min_priority]
@@ -235,7 +235,7 @@ def filter_best_quality(settings, items, film, update=False):
     bad_items = find_items_by_tags(items, settings.get("BAD_QUALITY", []))
     if bad_items:
         logger.info(f"Плохое качество найдено для фильма: {film.get('name')} (id: {film.get('id')}, en: {film.get('name_orig')}, year: {film.get('year')})")
-        Database.save_film(film, "films_bad_quality")
+        Database.save_film(film, settings.table_bad_quality)
         min_priority = min(item["Priority"] for item in bad_items)
         return [item for item in bad_items if item["Priority"] == min_priority]
 
@@ -316,8 +316,8 @@ async def main():
         )
 
         films = kinotam_api.get_films_to_process(settings.get_film_retries, settings.get_film_delay)
-        films_uploaded = Database.get_all_films("films_uploaded")
-        films_to_update = Database.get_all_films("films_bad_quality")
+        films_uploaded = Database.get_all_films(settings.table_good_quality)
+        films_to_update = Database.get_all_films(settings.table_bad_quality)
 
         uploaded_ids = {film['id'] for film in (films_uploaded + films_to_update)}
 
