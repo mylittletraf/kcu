@@ -251,7 +251,7 @@ async def process_film(settings, client, film, uploaded_ids, update_mode=False):
     name_local = film.get('name')
     name_orig = film.get('name_orig')
     year = film.get('year')
-    views = film.get("views_cnt", 0)
+    views = int(film.get("views_cnt", 0))
 
     if update_mode == False and views < settings.min_views:
         logger.info(
