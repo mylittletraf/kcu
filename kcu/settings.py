@@ -25,6 +25,7 @@ class Settings:
         self.restart_time = int(config("RESTART_TIME"))
         self.get_film_retries = (int(config("GET_FILMS_RETRIES")))
         self.get_film_delay = int(config("GET_FILMS_DELAY"))
+        self.max_size = int(config("MAX_SIZE"))
         self.table_bad_quality = config("TABLE_NAME_BAD_QUALITY")
         self.table_good_quality = config("TABLE_NAME_GOOD_QUALITY")
         self.min_views = int(config("MIN_VIEWS"))

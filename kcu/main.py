@@ -186,7 +186,7 @@ def filter_releases(settings, raw_result, local_name, orig_name, year):
             if item.get("Category") in categories
             and name_pattern.search(item.get("Name", ""))
             and (size_gb := parse_size(item.get("Size", ""))) is not None
-            and size_gb < settings.get("MAX_SIZE", 10)
+            and size_gb < settings.max_size
         ]
         result.extend(filtered_items)
 
