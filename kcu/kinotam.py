@@ -1,26 +1,26 @@
 import time
+from datetime import datetime
 
 import requests
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from datetime import datetime
 from log_config import logger
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 
 class Kinotam:
-    def __init__(self, url: str, url_admin: str, tm: str, auth_method:str, cat_id: int, offset: int, limit: int, tg_chat_id: str, tg_user_id: str, tg_token: str):
-        self.url = url
-        self.url_admin = url_admin
-        self.tm = tm
-        self.auth_method = auth_method
-        self.cat_id = cat_id
-        self.offset = offset
-        self.limit = limit
+    def __init__(self, app_settings):
+        self.url = app_settings.url
+        self.url_admin = app_settings.url_admin
+        self.tm = app_settings.tm
+        self.auth_method = app_settings.auth_method
+        self.cat_id = app_settings.cat_id
+        self.offset = app_settings.offset
+        self.limit = app_settings.limit
         self.cookies = self.get_cookies()
-        self.tg_chat_id = tg_chat_id
-        self.tg_user_id = tg_user_id
-        self.tg_token = tg_token
+        self.tg_chat_id = app_settings.tg_chat_id
+        self.tg_user_id = app_settings.tg_user_id
+        self.tg_token = app_settings.tg_token
 
     def get_cookies(self, max_retries=3, delay=2):
         if self.auth_method == "browser":
@@ -32,10 +32,6 @@ class Kinotam:
             return None
 
     def _get_cookies_with_browser(self):
-        from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.chrome.service import Service
-        from selenium import webdriver
-
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
@@ -139,13 +135,11 @@ class Kinotam:
         api_url = self.url + '/api/films/upload/add/'
         session = requests.Session()
         session.cookies.update(self.cookies)
-        logger.info(f"Добавляю фильм на сайт {film}")
-        target_name = (
-            "Фильм" if self.cat_id == 91
-            else "Мультфильм" if self.cat_id == 104
-            else ""
-        )
 
+        target_name = (
+            "Фильм" if self.cat_id == 91 else "Мультфильм" if self.cat_id == 104 else ""
+        )
+        logger.info(f"Добавляю {target_name} на сайт {film}")
         link_path = (
             "movie" if self.cat_id == 91
             else "cartoon" if self.cat_id == 104
@@ -168,7 +162,7 @@ class Kinotam:
             return response
 
         except Exception as e:
-            logger.warning(f"Ошибка при добавлении фильма")
+            logger.warning(f"Ошибка при добавлении {target_name.lower()}а")
             return 'Ошибка ', e
 
     def send_message_tg(self, film, message_status, link_path):
@@ -191,6 +185,6 @@ class Kinotam:
             'text': message,
             'parse_mode': 'Markdown'
         }
-        logger.info(f"Отправка уведомления в telegram")
+        logger.info("Отправка уведомления в telegram")
         requests.post(url, data=payload)
 
