@@ -2,8 +2,6 @@ import re
 import json
 import sqlite3
 import asyncio
-import time
-from urllib.parse import urlparse
 from pathlib import Path
 from typing import Optional
 
