@@ -1,5 +1,8 @@
 
-## Для запуска нужен docker
+## Для запуска нужен docker и docker-compose
+
+Инструкция по установке для разных операционок:
+https://docs.docker.com/engine/install/
 
 ```bash
 docker --version
@@ -12,19 +15,30 @@ docker-compose --version
 ```bash
 git clone https://github.com/mylittletraf/kcu
 cd kcu
-```
 
-
-Запуск в фоне:
-```bash
+# Сборка и запуск в фоновом режиме (выпустит консоль)
 docker-compose up -d
+
+# Сборка и запуск (выведет логи, cmd+c остановит программу)
+docker-compose up
 ```
+
 
 
 Логи (+ сохраняются в папку ./logs):
 
 ```bash
-docker-compose logs -f
+# Все логи
+docker-compose logs -f  
+
+# Логи загрузчика фильмов
+docker-compose logs -f kcu
+
+# Логи загрузчика мультфильмов
+docker-compose logs -f kcu-mult
+
+# Просмотр последних 300 строк логов
+docker-compose logs -f --tail 300 kcu
 ```
 
 
@@ -35,12 +49,17 @@ docker-compose logs -f
 
 ```bash
 docker-compose down
+docker-compose down kcu
+docker-compose down kcu-mult
 ```
 
 ### Перезапуск контейнеров: 
 
+Нужно при изменении соответствующих сервису настроек в .env или config файлов
+
 ```bash
-docker-compose restart
+docker-compose restart kcu
+docker-compose restart kcu-mult
 ```
 
 ### Просмотр запущенных сервисов
@@ -49,22 +68,11 @@ docker-compose restart
 docker compose ps
 ```
 
-### Перезапуск отдельного сервиса: 
-
-```bash
-docker-compose restart имя_сервиса
-```
-
-### Просмотр логов одного сервиса: 
-
-```bash
-docker-compose logs имя_сервиса
-```
-
 ### Запуск команд внутри контейнера: 
 
 ```bash
-docker-compose exec имя_сервиса bash
+docker-compose exec kcu bash
+docker-compose exec kcu-mult bash
 ```
 
 
@@ -75,7 +83,67 @@ docker-compose down -v --remove-orphans
 ```
 
 
-## config.json
+## docker-compose файл
+
+
+```
+version: "3.8"  
+services:  
+  torapi:  
+    image: lifailon/torapi:latest  
+    container_name: TorAPI  
+    environment:  
+      - PORT=${PORT}  
+      - PROXY_ADDRESS=${PROXY_ADDRESS}  
+      - PROXY_PORT=${PROXY_PORT}  
+      - USERNAME=${USERNAME}  
+      - PASSWORD=${PASSWORD}  
+    volumes:  
+      - torapi:/rotapi  
+
+#    Если нужно, чтобы был доступ к swagger извне, то
+#    нужно расскоменить проброс портов
+#    Ссылка http://ip-adress:8443/docs
+
+#    ports:  
+#      - "${PORT}:${PORT}"  
+    restart: unless-stopped  
+  kcu:  
+    build:  
+      context: ./kcu  
+    command: poetry run python main.py  
+    restart: unless-stopped  
+    env_file:  
+      - .env  
+    environment:  
+      - TZ=Europe/Moscow  
+    volumes:  
+      - ./result:/app/db  
+      - ./logs:/app/logs  
+      - ./config.json:/app/config.json  
+    depends_on:  
+      - torapi  
+  kcu-mult:  
+    build:  
+      context: ./kcu  
+    command: bash -c "sleep 60 && poetry run python main.py"  
+    restart: unless-stopped  
+    env_file:  
+      - .env.mult  
+    environment:  
+      - TZ=Europe/Moscow  
+    volumes:  
+      - ./result:/app/db  
+      - ./logs:/app/logs  
+      - ./config-mult.json:/app/config.json  
+    depends_on:  
+      - torapi  
+      - kcu  
+volumes:  
+  torapi:
+```
+
+## config.json + config-mult.json
 
 ```
 {
@@ -101,62 +169,80 @@ docker-compose down -v --remove-orphans
 ## .env + .env.mult (описание полей продублированы в .env-example)
 
 ```
+
 # Этот блок не трогаем!
-===
-PORT=8443
-PROXY_ADDRESS=
-PROXY_PORT=
-USERNAME=
-PASSWORD=
-URL_TORRAPI=http://torapi:8443
-====
 
-# Далее ставим нужные значения
-
-#Эта ссылка используется для получения фильмов и загрузки торрента на сайт
-URL=
-
-#Эта ссылка используется для получения sid из кук
-URL_ADMIN=
-
-#Токен для получения SID
-TM=
-
-#Варианты: request или browser
-#Изначально был silenium, заходил по URL_ADMIN и получал куки
-#Потом узнал про API и переделал на более легкий вариант
-#Не стал удалять опцию с браузером, мало-ли пригодится
-AUTH_METHOD=
-
-#Фильмы старше этого года будут игнорироваться (костыль для момента, когда будем заливать только новинки)
-MIN_YEAR=1950
-
-#Для телеги
-TG_CHAT_ID=
-TG_USER_ID=
-TG_BOT_TOKEN=
-
-#Параметры для запроса получения фильмов на kinotam
-CAT_ID=91
-OFFSET=0
-LIMIT=10
-
-#Время между запросами на добавление в секундах
-ADD_TIME_SLEEP=420
-
-#Через сколько запускать повторный поиск, отсчет начинается после завершения последней обработки
-RESTART_TIME=420
-
-#Имя базы данных, сохраняется в папке result в корне приложения, при DEBUG=True добавляется суффикс _test
-DB_NAME=films
-
-#При значении True, результат сохраняет в файл result/result.json в корне приложения
-#При значении False, загружает на сервер
-DEBUG=true
-
-#Если по каким то причинам получили от Kinotam пустой список фильмов,
-#то делаем GET_FILMS_RETRIES попыток с паузой GET_FILMS_DELAY (секунды)
-GET_FILMS_RETRIES=3
-GET_FILMS_DELAY=2
-
+PORT=8443  
+PROXY_ADDRESS=  
+PROXY_PORT=  
+USERNAME=  
+PASSWORD=  
+URL_TORRAPI=http://torapi:8443  
+CONFIG_FILE=config.json  
+  
+#===========================================  
+#Все что ниже можно менять по необходимости  
+#===========================================  
+  
+#Имя приложения для логгера  
+APP_NAME=kcu_films  
+  
+#Эта ссылка используется для получения фильмов и загрузки торрента на сайт  
+URL=https://kinotam.org  
+  
+#Эта ссылка используется для получения sid из кук  
+URL_ADMIN=https://kinotam.org/tm/ {сюда TM} /  
+  
+#Токен для получения SID  
+TM={сюда TM}  
+  
+#Варианты: request или browser  
+#Изначально был браузер, заходил по URL_ADMIN и получал куки  
+#Потом узнал про API и переделал на более легкий вариант  
+#Не стал удалять опцию с браузером, мало-ли пригодится  
+AUTH_METHOD=request  
+  
+#Фильмы старше этого года будут игнорироваться  
+MIN_YEAR=1950  
+  
+#Для телеги  
+TG_CHAT_ID=  
+TG_USER_ID=  
+TG_BOT_TOKEN=  
+  
+#Параметры для запроса получения фильмов на kinotam (91 - кино, 104 - мультфильм)  
+CAT_ID=91  
+OFFSET=0  
+LIMIT=30  
+  
+#Максимальный размер фильма в GB  
+MAX_SIZE=8  
+  
+#Минимальное количество просмотров для загрузки  
+MIN_VIEWS=50  
+  
+#Время между запросами на добавление в секундах  
+ADD_TIME_SLEEP=420  
+  
+#Через сколько запускать повторный поиск, отсчет начинается после завершения последней обработки  
+RESTART_TIME=420  
+  
+#Имя базы данных, сохраняется в папке result в корне приложения, при DEBUG=True добавляется суффикс _test  
+DB_NAME=films  
+TABLE_NAME_GOOD_QUALITY=films_uploaded  
+TABLE_NAME_BAD_QUALITY=films_bad_quality  
+  
+#При значении True, результат сохраняет в файл result/result.json в корне приложения  
+#При значении False, загружает на сервер  
+DEBUG=true  
+  
+#Если по каким то причинам получили от Kinotam пустой список фильмов,  
+#то делаем GET_FILMS_RETRIES попыток с паузой GET_FILMS_DELAY (секунды)  
+GET_FILMS_RETRIES=3  
+GET_FILMS_DELAY=2  
+  
+#Если по каким то причинам не удалось получить magnet ссылку от torapi сервиса,  
+#то делаем GET_MAGNET_RETRIES попыток с паузой GET_MAGNET_DELAY (секунды)  
+GET_MAGNET_RETRIES=3  
+GET_MAGNET_DELAY=1.0
 ```
