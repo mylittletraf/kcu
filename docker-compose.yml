@@ -32,7 +32,7 @@ services:
   kcu-mult:
     build:
       context: ./kcu
-    command: poetry run python main.py
+    command: bash -c "sleep 60 && poetry run python main.py"
     restart: unless-stopped
     env_file:
       - .env.mult
