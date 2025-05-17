@@ -12,7 +12,7 @@ class Settings:
         self.auth_method = config("AUTH_METHOD")
         self.url_torrent = config("URL_TORRAPI")
         self.cat_id = int(config("CAT_ID"))
-        self.offset = int(config("OFFSET"))
+        self.max_limit = int(config("MAX_LIMIT"))
         self.limit = int(config("LIMIT"))
         self.config_file = config("CONFIG_FILE")
         self.config_data = self._load_config()

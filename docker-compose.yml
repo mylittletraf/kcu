@@ -11,8 +11,8 @@ services:
       - PASSWORD=${PASSWORD}
     volumes:
       - torapi:/rotapi
-#    ports:
-#      - "${PORT}:${PORT}"
+    ports:
+      - "${PORT}:${PORT}"
     restart: unless-stopped
   kcu:
     build:
@@ -29,21 +29,21 @@ services:
       - ./config.json:/app/config.json
     depends_on:
       - torapi
-  kcu-mult:
-    build:
-      context: ./kcu
-    command: bash -c "sleep 60 && poetry run python main.py"
-    restart: unless-stopped
-    env_file:
-      - .env.mult
-    environment:
-      - TZ=Europe/Moscow
-    volumes:
-      - ./result:/app/db
-      - ./logs:/app/logs
-      - ./config-mult.json:/app/config.json
-    depends_on:
-      - torapi
-      - kcu
+#  kcu-mult:
+#    build:
+#      context: ./kcu
+#    command: bash -c "sleep 60 && poetry run python main.py"
+#    restart: unless-stopped
+#    env_file:
+#      - .env.mult
+#    environment:
+#      - TZ=Europe/Moscow
+#    volumes:
+#      - ./result:/app/db
+#      - ./logs:/app/logs
+#      - ./config-mult.json:/app/config.json
+#    depends_on:
+#      - torapi
+#      - kcu
 volumes:
   torapi:

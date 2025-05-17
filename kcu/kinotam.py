@@ -15,8 +15,8 @@ class Kinotam:
         self.tm = app_settings.tm
         self.auth_method = app_settings.auth_method
         self.cat_id = app_settings.cat_id
-        self.offset = app_settings.offset
         self.limit = app_settings.limit
+        self.max_limit = app_settings.max_limit
         self.cookies = self.get_cookies()
         self.tg_chat_id = app_settings.tg_chat_id
         self.tg_user_id = app_settings.tg_user_id
@@ -89,39 +89,61 @@ class Kinotam:
         return None
 
     def get_films_to_process(self, max_retries=3, delay=2):
-        api_url = self.url + '/api/films/upload/list/'
+        api_url = self.url + "/api/films/upload/list/"
         session = requests.Session()
         session.cookies.update(self.cookies)
 
-        data = {
-            'Ot': self.cat_id,
-            'O': self.offset,
-            'L': self.limit,
-            '_origin': self.url
-        }
+        total_limit = self.limit
+        start_offset = 0
+        result = []
 
-        for attempt in range(1, max_retries + 1):
-            logger.info(f"Попытка {attempt}: Получаю фильмы на обработку")
-            try:
-                response = session.post(api_url, data=data)
-                response.raise_for_status()
+        num_full_requests = total_limit // self.max_limit
+        last_chunk = total_limit % self.max_limit
 
-                json_response = response.json()
-                items = json_response.get('items')
+        chunks = [
+            (start_offset + i * self.max_limit, self.max_limit)
+            for i in range(num_full_requests)
+        ]
 
-                if items:
-                    logger.info(f"Фильмы на обработку: {items}")
-                    return items
-                else:
-                    logger.warning(f"Список фильмов пустой (попытка {attempt})")
+        if last_chunk > 0:
+            chunks.append(
+                (start_offset + num_full_requests * self.max_limit, last_chunk)
+            )
+
+        for offset, limit in chunks:
+            data = {
+                "Ot": self.cat_id,
+                "O": offset,
+                "L": limit,
+                "_origin": self.url,
+            }
+
+            for attempt in range(1, max_retries + 1):
+                logger.info(f"Попытка {attempt}: Получаю фильмы с OFFSET={offset}, LIMIT={limit}")
+                try:
+                    response = session.post(api_url, data=data)
+                    response.raise_for_status()
+
+                    json_response = response.json()
+                    items = json_response.get("items")
+
+                    if items:
+                        logger.info(f"Получаю данные O={offset}, L={limit}: {items}")
+                        result.extend(items)
+                        break
+                    else:
+                        logger.warning(f"Список фильмов пустой (попытка {attempt})")
+                        time.sleep(delay)
+
+                except Exception as e:
+                    logger.warning(
+                        f"Ошибка при получении списка фильмов (попытка {attempt}): {e}"
+                    )
                     time.sleep(delay)
-
-            except Exception as e:
-                logger.warning(f"Ошибка при получении списка фильмов (попытка {attempt}): {e}")
-                time.sleep(delay)
-
-        logger.error("Не удалось получить список фильмов после всех попыток")
-        return []
+        if not result:
+            logger.error("Не удалось получить фильмы после всех попыток")
+        logger.info(f"Фильмы на обработку: {result}")
+        return result
 
     def upload_film(self, film):
 
