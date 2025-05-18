@@ -11,7 +11,7 @@ class Database:
     Класс для соединения с БД
     """
     db_filename = settings.db_name + '_test' if settings.debug else settings.db_name
-    DB_DIR = "./db"
+    DB_DIR = "./db_base"
     DB_PATH = Path(f"{DB_DIR}/{db_filename}.db")
 
     @classmethod
