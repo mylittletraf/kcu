@@ -4,11 +4,10 @@ from typing import TypedDict
 
 import requests
 from config.log_config import logger
+from config.settings import Settings
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-
-from config.settings import Settings
 
 
 class ConfigurationError(Exception):

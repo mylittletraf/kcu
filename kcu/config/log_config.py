@@ -1,6 +1,7 @@
 import logging
-from logging.handlers import TimedRotatingFileHandler
 import os
+from logging.handlers import TimedRotatingFileHandler
+
 from config.settings import settings
 
 os.makedirs("./logs", exist_ok=True)

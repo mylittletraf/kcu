@@ -1,15 +1,13 @@
-import json
 import asyncio
+import json
 
 import httpx
-
-from core.api_torrent import search_by_name, get_magnet_link
-from db.db import Database
-from core.filters import filter_releases, filter_best_quality, seed_count_filter
-from core.kinotam import Kinotam
-
 from config.log_config import logger
-from config.settings import settings, Settings
+from config.settings import Settings, settings
+from core.api_torrent import get_magnet_link, search_by_name
+from core.filters import filter_best_quality, filter_releases, seed_count_filter
+from core.kinotam import Kinotam
+from db.db import Database
 from models.film import Film
 
 
@@ -76,7 +74,6 @@ async def process_film(
 async def main():
     Database.init()
 
-    # Используем семафор для ограничения числа одновременных запросов
     semaphore = asyncio.Semaphore(10)  # Лимит в 10 параллельных задач
 
     async with httpx.AsyncClient(timeout=20.0) as client:
@@ -92,8 +89,6 @@ async def main():
             films_to_update = Database.get_all_films(settings.table_bad_quality)
 
             uploaded_ids = {film['id'] for film in (films_uploaded + films_to_update)}  # select id from good union select id from bad
-
-            final_result = []
 
             async def process_with_semaphore(film, is_update=False):
                 """Обработка фильма с ограничением числа параллельных задач"""
@@ -111,7 +106,6 @@ async def main():
                     )
                 return None
 
-            # Создаем задачи для всех фильмов
             tasks = []
             for film in films:
                 tasks.append(process_with_semaphore(film, is_update=False))
@@ -119,11 +113,9 @@ async def main():
             for film in films_to_update:
                 tasks.append(process_with_semaphore(film, is_update=True))
 
-            # Выполняем все задачи параллельно и фильтруем результаты
             results = await asyncio.gather(*tasks)
             final_result = [result for result in results if result]
 
-            # Обработка результатов
             if not settings.debug:
                 for film_to_upload in final_result:
                     logger.info(f"Загружаю фильм [{film_to_upload.get('id')}] | {film_to_upload.get('name_to_api')}")

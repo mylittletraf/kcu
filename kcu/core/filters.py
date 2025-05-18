@@ -1,8 +1,8 @@
 import re
 
+from config.log_config import logger
 from config.settings import settings
 from db.db import Database
-from config.log_config import logger
 
 
 def parse_size(size_str: str):

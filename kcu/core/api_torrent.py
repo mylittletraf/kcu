@@ -1,8 +1,7 @@
 import asyncio
-from typing import Optional, Any, TypedDict
+from typing import TypedDict
 
 import httpx
-
 from config.log_config import logger
 from config.settings import settings
 

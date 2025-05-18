@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -31,7 +31,6 @@ def get_base_path() -> Path:
     return project_root
 
 
-# Базовый путь проекта
 BASE_PATH = get_base_path()
 
 

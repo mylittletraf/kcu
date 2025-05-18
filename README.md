@@ -1,4 +1,3 @@
-
 ## Для запуска нужен docker и docker-compose
 
 Инструкция по установке для разных операционок:
@@ -9,8 +8,7 @@ docker --version
 docker-compose --version
 ```
 
-
-## Запуск приложения 
+## Запуск приложения
 
 ```bash
 git clone https://github.com/mylittletraf/kcu
@@ -22,8 +20,6 @@ docker-compose up -d
 # Сборка и запуск (выведет логи, cmd+c остановит программу)
 docker-compose up
 ```
-
-
 
 Логи (+ сохраняются в папку ./logs):
 
@@ -41,11 +37,9 @@ docker-compose logs -f kcu-mult
 docker-compose logs -f --tail 300 kcu
 ```
 
+## Полезные команды
 
-## Полезные команды 
-
-
-### Остановка контейнеров: 
+### Остановка контейнеров:
 
 ```bash
 docker-compose down
@@ -53,7 +47,7 @@ docker-compose down kcu
 docker-compose down kcu-mult
 ```
 
-### Перезапуск контейнеров: 
+### Перезапуск контейнеров:
 
 Нужно при изменении соответствующих сервису настроек в .env или config файлов
 
@@ -68,13 +62,12 @@ docker-compose restart kcu-mult
 docker compose ps
 ```
 
-### Запуск команд внутри контейнера: 
+### Запуск команд внутри контейнера:
 
 ```bash
 docker-compose exec kcu bash
 docker-compose exec kcu-mult bash
 ```
-
 
 ## Удаление всех контейнеров, томов и сетей, созданных docker-compose:
 
@@ -82,9 +75,7 @@ docker-compose exec kcu-mult bash
 docker-compose down -v --remove-orphans
 ```
 
-
 ## docker-compose файл
-
 
 ```
 version: "3.8"  
