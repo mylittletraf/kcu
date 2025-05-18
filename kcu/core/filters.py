@@ -22,9 +22,10 @@ def normalize_name_to_pattern(name: str) -> str:
         if part in {'.', ':', '-', '—'}:
             pattern_parts.append(r'[:.\-—]?')
         else:
-            pattern_parts.append(re.escape(part.strip()))
+            part = part.strip()
+            if part:
+                pattern_parts.append(rf"\b{re.escape(part)}\b")
     return r'\s*'.join(pattern_parts)
-
 
 def build_name_pattern(local_name: str, orig_name: str = None, year: str = None) -> re.Pattern:
     conditions = []
@@ -34,10 +35,10 @@ def build_name_pattern(local_name: str, orig_name: str = None, year: str = None)
         conditions.append(local_name_pattern)
 
     if orig_name:
-        conditions.append(re.escape(orig_name))
+        conditions.append(rf"\b{re.escape(orig_name)}\b")
 
     if year:
-        conditions.append(re.escape(str(year)))
+        conditions.append(rf"\b{re.escape(str(year))}\b")
 
     pattern = ''.join(f"(?=.*{cond})" for cond in conditions) + ".*"
     return re.compile(pattern, re.IGNORECASE)
