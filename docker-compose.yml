@@ -23,9 +23,6 @@ services:
     restart: unless-stopped
     environment:
       - TZ=Europe/Moscow
-    volumes:
-      - ./result:/app/db
-      - ./logs:/app/logs
     depends_on:
       - torapi
 
@@ -36,6 +33,8 @@ services:
     env_file:
       - .env
     volumes:
+      - ./result:/app/db_base
+      - ./logs:/app/logs
       - ./config.json:/app/config.json
 
   kcu-mult:
@@ -45,7 +44,8 @@ services:
     env_file:
       - .env.mult
     volumes:
+      - ./result:/app/db_base
+      - ./logs:/app/logs
       - ./config-mult.json:/app/config.json
-
 volumes:
   torapi:
