@@ -1,8 +1,8 @@
 import re
 
-from settings import settings
-from db import Database
-from log_config import logger
+from config.settings import settings
+from db.db import Database
+from config.log_config import logger
 
 
 def parse_size(size_str: str):
@@ -124,4 +124,13 @@ def filter_best_quality(app_settings: settings, items, film, update=False):
 
 
 def seed_count_filter(items):
-    return max(items, key=lambda x: int(x.get('Seeds', 0)))
+    if not items:
+        return None
+
+    def safe_int(value):
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return 0
+
+    return max(items, key=lambda x: safe_int(x.get('Seeds')))

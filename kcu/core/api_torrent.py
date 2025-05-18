@@ -1,13 +1,29 @@
 import asyncio
-from typing import Optional
+from typing import Optional, Any, TypedDict
 
 import httpx
 
-from log_config import logger
-from settings import settings
+from config.log_config import logger
+from config.settings import settings
 
 
-async def search_by_name(app_settings: settings, client: httpx.AsyncClient, query, target="all"):
+class SearchByNameResponse(TypedDict):
+    Id: str
+    Name: str
+    Name_Original: str
+    Year: int
+    Tracker: str
+    Size: int
+    Seeders: int
+    Leechers: int
+    Magnet: str
+
+async def search_by_name(
+    app_settings: settings,
+    client: httpx.AsyncClient,
+    query,
+    target="all",
+) -> SearchByNameResponse:
     response = await client.get(
         f"{app_settings.url_torrent}/api/search/title/{target}",
         params={"query": query}
@@ -16,7 +32,12 @@ async def search_by_name(app_settings: settings, client: httpx.AsyncClient, quer
     return response.json()
 
 
-async def get_magnet_link(app_settings: settings, client: httpx.AsyncClient, tracker: str, torrent_id: str) -> Optional[str]:
+async def get_magnet_link(
+    app_settings: settings,
+    client: httpx.AsyncClient,
+    tracker: str,
+    torrent_id: str,
+) -> str | None:
     url = f"{app_settings.url_torrent}/api/search/id/{tracker.lower()}"
     params = {"query": torrent_id}
     retries = app_settings.get_magnet_retries

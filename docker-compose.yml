@@ -14,36 +14,38 @@ services:
     ports:
       - "${PORT}:${PORT}"
     restart: unless-stopped
-  kcu:
+
+  kcu-base:
+    &kcu-base
     build:
-      context: ./kcu
-    command: poetry run python main.py
+      context: .
+      dockerfile: ./docker/Dockerfile
     restart: unless-stopped
+    environment:
+      - TZ=Europe/Moscow
+    depends_on:
+      - torapi
+
+  kcu:
+    <<: *kcu-base
+    container_name: kcu-films
+    command: poetry run python main.py
     env_file:
       - .env
-    environment:
-      - TZ=Europe/Moscow
     volumes:
-      - ./result:/app/db
+      - ./result:/app/db_base
       - ./logs:/app/logs
       - ./config.json:/app/config.json
-    depends_on:
-      - torapi
+
   kcu-mult:
-    build:
-      context: ./kcu
-    command: bash -c "sleep 60 && poetry run python main.py"
-    restart: unless-stopped
+    <<: *kcu-base
+    container_name: kcu-cartoons
+    command: poetry run python main.py
     env_file:
       - .env.mult
-    environment:
-      - TZ=Europe/Moscow
     volumes:
-      - ./result:/app/db
+      - ./result:/app/db_base
       - ./logs:/app/logs
       - ./config-mult.json:/app/config.json
-    depends_on:
-      - torapi
-      - kcu
 volumes:
   torapi:
