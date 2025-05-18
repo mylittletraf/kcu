@@ -1,15 +1,29 @@
 import time
 from datetime import datetime
+from typing import TypedDict
 
 import requests
-from log_config import logger
+from config.log_config import logger
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 
+from config.settings import Settings
+
+
+class ConfigurationError(Exception):
+    """Custom exception for configuration errors."""
+    pass
+
+
+class CookiesDict(TypedDict):
+    """TypedDict for cookies."""
+    sessionid: str
+    csrf: str
+    sid: str
 
 class Kinotam:
-    def __init__(self, app_settings):
+    def __init__(self, app_settings: Settings):
         self.url = app_settings.url
         self.url_admin = app_settings.url_admin
         self.tm = app_settings.tm
@@ -17,10 +31,11 @@ class Kinotam:
         self.cat_id = app_settings.cat_id
         self.limit = app_settings.limit
         self.max_limit = app_settings.max_limit
-        self.cookies = self.get_cookies()
         self.tg_chat_id = app_settings.tg_chat_id
         self.tg_user_id = app_settings.tg_user_id
         self.tg_token = app_settings.tg_token
+
+        self.cookies = self.get_cookies()
 
     def get_cookies(self, max_retries=3, delay=2):
         if self.auth_method == "browser":
@@ -29,9 +44,9 @@ class Kinotam:
             return self._get_cookies_with_request(max_retries, delay)
         else:
             logger.error(f"Неизвестный метод аутентификации: {self.auth_method}")
-            return None
+            raise ConfigurationError()
 
-    def _get_cookies_with_browser(self):
+    def _get_cookies_with_browser(self) -> CookiesDict | None:
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
@@ -47,7 +62,7 @@ class Kinotam:
             logger.info(f"Перехожу по {self.url_admin[:37]}... ")
             driver.get(self.url_admin)
             selenium_cookies = driver.get_cookies()
-            cookies_dict = {cookie['name']: cookie['value'] for cookie in selenium_cookies}
+            cookies_dict = CookiesDict(**{cookie['name']: cookie['value'] for cookie in selenium_cookies})
             logger.info(f"Успешно получил куки {cookies_dict}")
             return cookies_dict
         except Exception as e:
@@ -56,7 +71,11 @@ class Kinotam:
         finally:
             driver.quit()
 
-    def _get_cookies_with_request(self, max_retries, delay):
+    def _get_cookies_with_request(
+        self,
+        max_retries,
+        delay,
+    ) -> CookiesDict | None:
         api_url = f"{self.url}/api/session/login/"
         data = {"tm": self.tm}
         cookies_dict = {"sandbox": "beta"}
@@ -88,7 +107,7 @@ class Kinotam:
         logger.error("Превышено максимальное число попыток получения sid")
         return None
 
-    def get_films_to_process(self, max_retries=3, delay=2):
+    def get_films_to_process(self, max_retries=3, delay=2):  # TODO переделать на async
         api_url = self.url + "/api/films/upload/list/"
         session = requests.Session()
         session.cookies.update(self.cookies)

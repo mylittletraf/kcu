@@ -28,7 +28,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 
-COPY . .
-
 RUN pip install poetry
-RUN poetry install --no-root
+RUN poetry config virtualenvs.create false
+
+COPY ./pyproject.toml ./poetry.lock ./
+RUN poetry install
+
+COPY kcu/ .
